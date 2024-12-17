@@ -1,0 +1,42 @@
+services:
+  app:
+    container_name: jikkenn-app
+    build: ./src
+    tty: true
+    volumes:
+      - ./src:/src
+    ports:
+      - 8080:8080
+    environment:
+      DB_USERNAME: ${DB_USERNAME}
+      DB_USERPASS: ${DB_USERPASS}
+      DB_DATABASENAME: ${DB_DATABASENAME}
+    depends_on:
+      - "db"
+      - "memcached"
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOTPASS}
+      MYSQL_DATABASE: ${DB_DATABASENAME}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_USERPASS}
+      MYSQL_TCP_PORT: 3306
+      TZ: 'Asia/Tokyo'
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    tty: true
+    restart: always
+  memcached:
+    image: memcached:latest
+    container_name: jikkenn-memcached
+    ports:
+      - 11211:11211
+    command: memcached -m 64
+
+volumes:
+  mysql-data:
+    driver: local
